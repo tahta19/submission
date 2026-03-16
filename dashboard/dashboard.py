@@ -5,9 +5,7 @@ import plotly.graph_objects as go
 import os
 from datetime import datetime
 
-# ============================
-# Load Data (Path Aman)
-# ============================
+# Load Data
 BASE_DIR = os.path.dirname(__file__)
 DATA_PATH = os.path.join(BASE_DIR, "main_data.csv")
 
@@ -18,9 +16,8 @@ def load_data():
 
 df = load_data()
 
-# ============================
+
 # Page Config
-# ============================
 st.set_page_config(
     page_title="Bike Sharing Dashboard", 
     layout="wide",
@@ -29,9 +26,7 @@ st.set_page_config(
 st.title("🚴 Bike Sharing Analysis Dashboard - Pro Version")
 st.markdown("**Data Source:** Capital Bike Share System (2011-2012, Washington D.C.)")
 
-# ============================
 # Sidebar Filter
-# ============================
 st.sidebar.header("📊 Filter Data")
 
 # Tahun
@@ -91,9 +86,8 @@ with col2:
         max_value=max_date
     )
 
-# ============================
+
 # Apply Filter
-# ============================
 filtered_df = df[
     (df['year_label'].isin(selected_years)) &
     (df['month_name'].isin(selected_months)) &
@@ -114,9 +108,8 @@ with col3:
 
 st.divider()
 
-# ============================
+
 # KPI Cards
-# ============================
 st.subheader("🎯 Key Performance Indicators")
 kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
 
@@ -145,9 +138,8 @@ with kpi_col3:
 
 st.divider()
 
-# ============================
+
 # Time Segment Visualization
-# ============================
 st.subheader("⏰ Rata-rata Penyewaan Sepeda per Time Segment")
 time_segment_df = filtered_df.groupby('time_segment')['cnt'].mean().reset_index().sort_values('cnt', ascending=False)
 time_segment_order = ['Morning', 'Afternoon', 'Evening', 'Night']
@@ -177,9 +169,7 @@ fig_ts.update_layout(
 )
 st.plotly_chart(fig_ts, use_container_width=True)
 
-# ============================
 # Season & Weather Visualization
-# ============================
 st.subheader("🌍 Penyewaan per Musim & Kondisi Cuaca")
 season_weather_df = filtered_df.groupby(['season_label', 'weather_label'])['cnt'].mean().reset_index()
 
@@ -199,9 +189,8 @@ fig_sw.update_layout(
 )
 st.plotly_chart(fig_sw, use_container_width=True)
 
-# ============================
 # Casual vs Registered
-# ============================
+
 st.subheader("👥 Perbandingan Perilaku Casual vs Registered User")
 hourly_df = filtered_df.groupby('hr')[['casual', 'registered']].mean().reset_index()
 
@@ -235,9 +224,8 @@ fig_cr.update_layout(
 fig_cr.update_xaxes(tickmode='linear', tick0=0, dtick=1)
 st.plotly_chart(fig_cr, use_container_width=True)
 
-# ============================
 # RFM Analysis + Clustering
-# ============================
+
 st.subheader("💰 RFM Analysis: Segmentasi Pelanggan")
 
 rfm_df = filtered_df.groupby('dteday').agg({
@@ -298,9 +286,8 @@ with rfm_col3:
 
 st.divider()
 
-# ============================
 # Date Detail Analysis
-# ============================
+
 st.subheader("📅 Analisis Detail Tanggal")
 
 col_date1, col_date2 = st.columns(2)
@@ -327,9 +314,9 @@ with col_date2:
 
 st.divider()
 
-# ============================
+
 # Date Picker untuk Single Day Analysis
-# ============================
+
 st.subheader("🔍 Single Date Analysis")
 
 min_date_range = filtered_df['dteday'].min()
@@ -405,9 +392,7 @@ else:
 
 st.divider()
 
-# ============================
 # Footer
-# ============================
 st.markdown("""
 ---
 ### 📌 Informasi Dashboard
