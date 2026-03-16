@@ -43,19 +43,19 @@ selected_hari = st.sidebar.selectbox("Hari Kerja?", hari_opsi)
 cuaca_options = df['weather_label'].unique().tolist()
 selected_cuaca = st.sidebar.multiselect("Cuaca", cuaca_options, default=cuaca_options)
 
-# Tanggal (kalender) di sidebar
+# Tanggal (Kalender)
 min_date = df['dteday'].min()
 max_date = df['dteday'].max()
 selected_date = st.sidebar.date_input("Pilih Tanggal", value=min_date, min_value=min_date, max_value=max_date)
 
-# Weekend Info
+# Info weekend
 if pd.to_datetime(selected_date).weekday() in [5,6]:
     st.sidebar.info("Tanggal ini adalah weekend")
 else:
     st.sidebar.success("Tanggal ini adalah weekday")
 
 # ============================
-# Apply filter
+# Apply Filter
 # ============================
 filtered_df = df[
     (df['year_label'].isin(selected_years)) &
@@ -108,8 +108,14 @@ rfm_df['Recency'] = (rfm_df['dteday'].max() - rfm_df['dteday']).dt.days
 rfm_df['Frequency'] = rfm_df['cnt']
 rfm_df['Monetary'] = rfm_df['cnt']
 
-# Clustering manual (qcut)
-rfm_df['Segment'] = pd.qcut(rfm_df['Monetary'], q=4, labels=['Low','Medium','High','Very High'])
+# Clustering safe (qcut)
+try:
+    rfm_df['Segment'] = pd.qcut(rfm_df['Monetary'], q=4,
+                                 labels=['Low','Medium','High','Very High'],
+                                 duplicates='drop')
+except ValueError:
+    # fallback: 2 segmen jika dataset terlalu kecil
+    rfm_df['Segment'] = pd.qcut(rfm_df['Monetary'], q=2, labels=['Low','High'], duplicates='drop')
 
 fig_rfm = px.bar(rfm_df, x='dteday', y='cnt', color='Segment', 
                  labels={'cnt':'Total Penyewaan', 'dteday':'Tanggal'}, 
