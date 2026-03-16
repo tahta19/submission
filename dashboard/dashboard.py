@@ -43,12 +43,26 @@ selected_hari = st.sidebar.selectbox("Hari Kerja?", hari_opsi)
 cuaca_options = df['weather_label'].unique().tolist()
 selected_cuaca = st.sidebar.multiselect("Cuaca", cuaca_options, default=cuaca_options)
 
+# Tanggal (kalender) di sidebar
+min_date = df['dteday'].min()
+max_date = df['dteday'].max()
+selected_date = st.sidebar.date_input("Pilih Tanggal", value=min_date, min_value=min_date, max_value=max_date)
+
+# Weekend Info
+if pd.to_datetime(selected_date).weekday() in [5,6]:
+    st.sidebar.info("Tanggal ini adalah weekend")
+else:
+    st.sidebar.success("Tanggal ini adalah weekday")
+
+# ============================
 # Apply filter
+# ============================
 filtered_df = df[
     (df['year_label'].isin(selected_years)) &
     (df['month_name'].isin(selected_months)) &
     (df['weekday_name'].apply(lambda x: 'Weekend' if x in ['Saturday','Sunday'] else 'Weekday') == selected_hari) &
-    (df['weather_label'].isin(selected_cuaca))
+    (df['weather_label'].isin(selected_cuaca)) &
+    (df['dteday'] == pd.to_datetime(selected_date))
 ]
 
 st.markdown(f"**Jumlah Data Setelah Filter:** {len(filtered_df)} rows")
@@ -102,16 +116,3 @@ fig_rfm = px.bar(rfm_df, x='dteday', y='cnt', color='Segment',
                  color_discrete_sequence=px.colors.sequential.Viridis)
 fig_rfm.update_traces(hovertemplate='Tanggal: %{x}<br>Total: %{y}<br>Segment: %{marker.color}')
 st.plotly_chart(fig_rfm, use_container_width=True)
-
-# ============================
-# Filter Tanggal (Kalender)
-# ============================
-st.subheader("Filter Tanggal (Weekend Highlighted)")
-min_date = filtered_df['dteday'].min()
-max_date = filtered_df['dteday'].max()
-selected_date = st.date_input("Pilih Tanggal:", min_value=min_date, max_value=max_date)
-
-if pd.to_datetime(selected_date).weekday() in [5,6]:
-    st.info("Tanggal ini adalah weekend")
-else:
-    st.success("Tanggal ini adalah weekday")
