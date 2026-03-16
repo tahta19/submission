@@ -94,31 +94,3 @@ fig_cr.add_trace(go.Scatter(x=hourly_df['hr'], y=hourly_df['registered'],
                             line=dict(color='darkorange')))
 fig_cr.update_layout(title="Casual vs Registered per Jam", xaxis_title="Jam", yaxis_title="Rata-rata Penyewaan")
 st.plotly_chart(fig_cr, use_container_width=True)
-
-# ============================
-# RFM Analysis + Clustering
-# ============================
-st.subheader("RFM Analysis: Segmentasi Pelanggan")
-rfm_df = filtered_df.groupby('dteday').agg({
-    'cnt':'sum',
-    'casual':'sum',
-    'registered':'sum'
-}).reset_index()
-rfm_df['Recency'] = (rfm_df['dteday'].max() - rfm_df['dteday']).dt.days
-rfm_df['Frequency'] = rfm_df['cnt']
-rfm_df['Monetary'] = rfm_df['cnt']
-
-# Clustering safe (qcut)
-try:
-    rfm_df['Segment'] = pd.qcut(rfm_df['Monetary'], q=4,
-                                 labels=['Low','Medium','High','Very High'],
-                                 duplicates='drop')
-except ValueError:
-    # fallback: 2 segmen jika dataset terlalu kecil
-    rfm_df['Segment'] = pd.qcut(rfm_df['Monetary'], q=2, labels=['Low','High'], duplicates='drop')
-
-fig_rfm = px.bar(rfm_df, x='dteday', y='cnt', color='Segment', 
-                 labels={'cnt':'Total Penyewaan', 'dteday':'Tanggal'}, 
-                 color_discrete_sequence=px.colors.sequential.Viridis)
-fig_rfm.update_traces(hovertemplate='Tanggal: %{x}<br>Total: %{y}<br>Segment: %{marker.color}')
-st.plotly_chart(fig_rfm, use_container_width=True)
